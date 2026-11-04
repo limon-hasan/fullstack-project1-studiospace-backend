@@ -60,6 +60,24 @@ app.post("/add-studio", async (req, res) => {
   }
 });
 
+app.get("/my-studios", async (req, res) => {
+  try {
+    const email = req.query.email;
+    if (!email) {
+      return res
+        .status(400)
+        .send({ message: "Email query parameter is required" });
+    }
+    const result = await studiosCollection
+      .find({ ownerEmail: email })
+      .toArray();
+    res.send(result);
+  } catch (error) {
+    console.error("Error fetching my studios:", error);
+    res.status(500).send({ message: "Failed to fetch user studios" });
+  }
+});
+
 app.get("/featured-studios", async (req, res) => {
   try {
     const result = await studiosCollection
