@@ -48,6 +48,18 @@ app.get("/studios/:id", async (req, res) => {
   }
 });
 
+app.post("/add-studio", async (req, res) => {
+  try {
+    const data = req.body;
+    // console.log(data);
+    const result = await studiosCollection.insertOne(data);
+    res.send(result);
+  } catch (error) {
+    console.error("Error adding single studio:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.get("/featured-studios", async (req, res) => {
   try {
     const result = await studiosCollection
