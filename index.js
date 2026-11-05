@@ -27,27 +27,39 @@ const bookingsCollection = db.collection("bookings");
 
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  console.log(authHeader);
 
-  if (!authHeader) {
-    return res.status(401).json({ message: "Unauthorized" });
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized", error: "Missing Bearer token" });
   }
   const token = authHeader.split(" ")[1];
-  console.log("New token: ", token);
   if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res
+      .status(401)
+      .json({ message: "Unauthorized", error: "Token not found" });
   }
 
-  const JWKS = createRemoteJWKSet(
-    new URL(`${process.env.CLIENT_URL}/api/auth/jwks`),
-  );
+  // ট্রেইলিং স্ল্যাশ ও স্পেস মুক্ত পরিষ্কার URL
+  const rawUrl =
+    process.env.CLIENT_URL ||
+    process.env.CLIENT ||
+    "https://fullstack-project1-studiospace-clie.vercel.app";
+  const clientUrl = rawUrl.trim().replace(/\/+$/, "");
+
+  const JWKS = createRemoteJWKSet(new URL(`${clientUrl}/api/auth/jwks`));
 
   try {
     const { payload } = await jwtVerify(token, JWKS);
     req.user = payload;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Unauthorized" });
+    console.error("JWT Verification Fail:", error.message);
+    // আসল এররটি সরাসরি রেসপন্সে পাঠানো হচ্ছে
+    return res.status(401).json({
+      message: "Unauthorized",
+      error: error.message,
+    });
   }
 };
 
