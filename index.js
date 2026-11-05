@@ -8,6 +8,7 @@ const port = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 import { MongoClient, ObjectId } from "mongodb";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const client = new MongoClient(process.env.MONGODB_URI);
 export async function connectToMongoDB() {
@@ -24,15 +25,30 @@ const db = mongoClient.db("studiospace");
 const studiosCollection = db.collection("studios");
 const bookingsCollection = db.collection("bookings");
 
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   console.log(authHeader);
 
-  if (authHeader !== "user logged in") {
+  if (!authHeader) {
     return res.status(401).json({ message: "Unauthorized" });
   }
-  console.log("Limon is a middleware, broooh!!!");
-  next();
+  const token = authHeader.split(" ")[1];
+  console.log("New token: ", token);
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const JWKS = createRemoteJWKSet(
+    new URL(`http://localhost:3000/api/auth/jwks`),
+  );
+
+  try {
+    const { payload } = await jwtVerify(token, JWKS);
+    req.user = payload;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 };
 
 app.get("/", (req, res) => {
@@ -49,7 +65,7 @@ app.get("/studios", async (req, res) => {
   }
 });
 
-app.get("/studios/:id", verifyToken, async (req, res) => {
+app.get("/studios/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await studiosCollection.findOne({ _id: new ObjectId(id) });
@@ -60,7 +76,7 @@ app.get("/studios/:id", verifyToken, async (req, res) => {
   }
 });
 
-app.post("/add-studio", async (req, res) => {
+app.post("/add-studio", verifyToken, async (req, res) => {
   try {
     const data = req.body;
     // console.log(data);
@@ -90,7 +106,7 @@ app.get("/my-studios", async (req, res) => {
   }
 });
 
-app.delete("/studios/:id", async (req, res) => {
+app.delete("/studios/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await studiosCollection.deleteOne({ _id: new ObjectId(id) });
@@ -155,7 +171,7 @@ app.get("/featured-studios", async (req, res) => {
 // });
 
 // Now checking with double booking logic
-app.post("/add-my-bookings", async (req, res) => {
+app.post("/add-my-bookings", verifyToken, async (req, res) => {
   try {
     const { studioId, bookingDate, startTime, endTime } = req.body;
 
