@@ -152,24 +152,6 @@ app.get("/featured-studios", async (req, res) => {
   }
 });
 
-// Starting booking API data -->
-// app.post("/add-my-bookings", async (req, res) => {
-//   try {
-//     const bookingData = req.body;
-//     const newBooking = {
-//       ...bookingData,
-//       status: "Pending",
-//       createdAt: new Date(),
-//     };
-//     const result = await bookingsCollection.insertOne(bookingData);
-//     console.log(result);
-//     res.status(201).send(result);
-//   } catch (error) {
-//     console.error("Error adding single bookings data:", error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
-
 // Now checking with double booking logic
 app.post("/add-my-bookings", verifyToken, async (req, res) => {
   try {
