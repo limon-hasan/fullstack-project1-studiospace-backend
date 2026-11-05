@@ -24,6 +24,17 @@ const db = mongoClient.db("studiospace");
 const studiosCollection = db.collection("studios");
 const bookingsCollection = db.collection("bookings");
 
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  console.log(authHeader);
+
+  if (authHeader !== "user logged in") {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  console.log("Limon is a middleware, broooh!!!");
+  next();
+};
+
 app.get("/", (req, res) => {
   res.send({ message: "Server is running fine Limon!!!" });
 });
@@ -38,7 +49,7 @@ app.get("/studios", async (req, res) => {
   }
 });
 
-app.get("/studios/:id", async (req, res) => {
+app.get("/studios/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await studiosCollection.findOne({ _id: new ObjectId(id) });
@@ -126,20 +137,74 @@ app.get("/featured-studios", async (req, res) => {
 });
 
 // Starting booking API data -->
+// app.post("/add-my-bookings", async (req, res) => {
+//   try {
+//     const bookingData = req.body;
+//     const newBooking = {
+//       ...bookingData,
+//       status: "Pending",
+//       createdAt: new Date(),
+//     };
+//     const result = await bookingsCollection.insertOne(bookingData);
+//     console.log(result);
+//     res.status(201).send(result);
+//   } catch (error) {
+//     console.error("Error adding single bookings data:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
+
+// Now checking with double booking logic
 app.post("/add-my-bookings", async (req, res) => {
   try {
-    const bookingData = req.body;
-    const newBooking = {
-      ...bookingData,
-      status: "Pending",
+    const { studioId, bookingDate, startTime, endTime } = req.body;
+
+    if (!studioId || !bookingDate || !startTime || !endTime) {
+      return res.status(400).json({
+        message: "Studio ID, Date, Start Time, and End Time are required.",
+      });
+    }
+
+    // ১. একই স্টুডিওর একই তারিখে "Confirmed" থাকা বুকিংগুলো খোঁজা (Challenge 2)
+    const confirmedBookingsOnSameDate = await bookingsCollection
+      .find({
+        studioId: studioId,
+        bookingDate: bookingDate,
+        status: "Confirmed",
+      })
+      .toArray();
+
+    // ২. টাইম স্লট ওভারল্যাপ হচ্ছে কি না যাচাই করা
+    const hasCollision = confirmedBookingsOnSameDate.some((existing) => {
+      // যদি আগের কোনো ডাটাতে startTime/endTime না থাকে তবে পুরো দিন বুকড ধরে নেওয়া
+      if (!existing.startTime || !existing.endTime) return true;
+
+      // Overlap Condition: (NewStart < ExistingEnd) && (NewEnd > ExistingStart)
+      return startTime < existing.endTime && endTime > existing.startTime;
+    });
+
+    if (hasCollision) {
+      return res.status(409).json({
+        message: `Double-Booking Collision: This studio is already confirmed for this time slot on ${bookingDate}. Please select another time or date.`,
+      });
+    }
+
+    // ৩. কোনো কলিশন না থাকলে ডাটাবেজে ইনসার্ট করা
+    const result = await bookingsCollection.insertOne({
+      ...req.body,
       createdAt: new Date(),
-    };
-    const result = await bookingsCollection.insertOne(bookingData);
-    console.log(result);
-    res.status(201).send(result);
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Reservation placed successfully",
+      insertedId: result.insertedId,
+    });
   } catch (error) {
-    console.error("Error adding single bookings data:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Booking Error:", error);
+    res.status(500).json({
+      message: "Internal server error while processing booking.",
+    });
   }
 });
 
@@ -189,6 +254,29 @@ app.patch("/my-bookings/:id/cancel", async (req, res) => {
   } catch (error) {
     console.error("Cancellation error:", error);
     res.status(500).json({ message: "Failed to cancel booking" });
+  }
+});
+
+// PATCH /my-bookings/:id/confirm
+app.patch("/my-bookings/:id/confirm", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await bookingsCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { status: "Confirmed", updatedAt: new Date() } },
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Booking confirmed successfully",
+    });
+  } catch (error) {
+    console.error("Confirm error:", error);
+    res.status(500).json({ message: "Failed to confirm booking" });
   }
 });
 
