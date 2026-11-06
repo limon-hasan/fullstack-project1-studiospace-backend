@@ -1,7 +1,3 @@
----
-
-### ২. Backend Repo-r jonno (`studiospace-server/README.md`)
-
 # ⚙️ StudioSpace — API Server & Microservices
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge&logo=node.js)](https://nodejs.org/)
@@ -16,8 +12,8 @@ High-performance REST API backend powering the StudioSpace creative production p
 
 ## 🌐 Production Endpoints
 
-- **Live Base URL:** `[https://fullstack-project1-studiospace-back.vercel.app](https://fullstack-project1-studiospace-back.vercel.app)`
-- **Authorized Client URL:** `[https://fullstack-project1-studiospace-clie.vercel.app](https://fullstack-project1-studiospace-clie.vercel.app)`
+- **Live Base URL:** [https://fullstack-project1-studiospace-back.vercel.app](https://fullstack-project1-studiospace-back.vercel.app)
+- **Authorized Client URL:** [https://fullstack-project1-studiospace-clie.vercel.app](https://fullstack-project1-studiospace-clie.vercel.app)
 
 ---
 
