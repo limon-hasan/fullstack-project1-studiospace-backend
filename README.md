@@ -1,12 +1,18 @@
-# 🎬 StudioSpace — Client Web Application
+---
 
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-[![Better Auth](https://img.shields.io/badge/Auth-Better_Auth-purple?style=for-the-badge)](https://www.better-auth.com/)
-[![Deployed on Vercel](https://img.shields.io/badge/Deployment-Vercel-000000?style=for-the-badge&logo=vercel)](https://fullstack-project1-studiospace-clie.vercel.app)
+### ২. Backend Repo-r jonno (`studiospace-server/README.md`)
 
-A modern full-stack web application designed for filmmakers, photographers, and audio engineers to discover, list, and book creative production spaces. Features zero-friction hourly reservations, collision-free slot protection, and token-verified host submissions.
+# ⚙️ StudioSpace — API Server & Microservices
+
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-4.x-black?style=for-the-badge&logo=express)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
+[![JOSE JWKS](https://img.shields.io/badge/Security-JWKS_JWT-red?style=for-the-badge)](https://github.com/panva/jose)
+[![Vercel Serverless](https://img.shields.io/badge/Serverless-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/)
+
+High-performance REST API backend powering the StudioSpace creative production platform. Built with Node.js, Express, and MongoDB, secured via asynchronous remote JSON Web Key Set (JWKS) authentication verification.
+
+---
 
 ## 🌐 Production Endpoints
 
